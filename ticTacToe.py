@@ -10,24 +10,31 @@ X, O, BLANK = 'X', 'O', ' '
 
 def main():
     print("Let\'s Play TIC-TAC-TOE:")
+    
+
     gameBoard = getBlankBoard()
     currentPlayer, nextPlayer = X, O
+    tips = ''
+    
+    print("Do you want the computer to give you suggestions? (y/n)")
+    tips = input('>')
     
     while True:   #main game loop
         print(getBoardStr(gameBoard))   #Display the board
         move = None
-        print('It\'s {}\'s turn:'.format(currentPlayer))
-        #print available moves
-        print("available moves: ")
-        print(*availableMoves(gameBoard), sep = ", ")
-        #
-        if winMove(gameBoard, currentPlayer):
-            print("play here to win: ") 
-            print(*winMove(gameBoard, currentPlayer), sep = ', ')
-        
-        if winMove(gameBoard, nextPlayer):
-            print("play here to not lose: ")
-            print(*winMove(gameBoard, nextPlayer), sep = ', ')
+        print('It\'s {}\'s turn,'.format(currentPlayer))
+        if tips == 'y' or tips == 'Y':
+            #print available moves
+            print("available moves: ")
+            print(*availableMoves(gameBoard), sep = ", ")
+            #win moves
+            if winMoves(gameBoard, currentPlayer):
+                print("play here to win: ") 
+                print(*winMoves(gameBoard, currentPlayer), sep = ', ')
+            #don't lose moves
+            if winMoves(gameBoard, nextPlayer):
+                print("play here to not lose: ")
+                print(*winMoves(gameBoard, nextPlayer), sep = ', ')
         while not isValidSpace(gameBoard, move):
             print('{}, make your move: (1-9)'.format(currentPlayer))
             move = input('> ')
@@ -38,22 +45,28 @@ def main():
             print(getBoardStr(gameBoard))
             print(currentPlayer + ' has won the game!')
             break
-        elif isBoardFull(gameBoard):   #Check for a tie
+        #check if the board is full and no winner
+        elif isBoardFull(gameBoard):  
             print(getBoardStr(gameBoard))
             print('The game is a tie!')
             break
-
+        #check for a tie
+        elif len(availableMoves(gameBoard)) < 3 and len(winMoves(gameBoard, currentPlayer)) == 0 and len(winMoves(gameBoard, nextPlayer)) == 0:
+            print(getBoardStr(gameBoard))
+            print('The game is a tie!')
+            break
         #Switch players
         currentPlayer, nextPlayer = nextPlayer, currentPlayer
     print('Thanks for playing!')
-    
+
+#create board    
 def getBlankBoard():
-    #
     board = {}
     for space in ALL_SPACES:
         board[space] = BLANK
     return board
 
+#display board
 def getBoardStr(board):
     return '''
         {}|{}|{}   1 2 3
@@ -83,9 +96,9 @@ def isWinner(board, player):
 
 
 #returns a list of potential win moves for a specific player
-def winMove(board, player):
+def winMoves(board, player):
     b, p = board, player
-    winMoves = [] #initialize an empty list of win moves
+    moves = [] #initialize an empty list of win moves
     #list potential win rows - list of lists of dictionary keys
     wR = [[b['1'], b['2'], b['3']], #top row
            [b['4'], b['5'], b['6']], #midde row
@@ -107,12 +120,12 @@ def winMove(board, player):
     #loop through potential winRows to check for potential win
     for x in range(0, len(wR)):
         if wR[x][0] == wR[x][1] == p and wR[x][2] == BLANK:
-            winMoves.append(wRL[x][wR[x].index(BLANK)])
+            moves.append(wRL[x][wR[x].index(BLANK)])
         elif wR[x][0] == wR[x][2] == p and wR[x][1] == BLANK:
-            winMoves.append(wRL[x][wR[x].index(BLANK)])
+            moves.append(wRL[x][wR[x].index(BLANK)])
         elif wR[x][1] == wR[x][2] == p and wR[x][0] == BLANK:
-            winMoves.append(wRL[x][wR[x].index(BLANK)]) 
-    return winMoves
+            moves.append(wRL[x][wR[x].index(BLANK)]) 
+    return moves
     
 #returns True if the board is full
 def isBoardFull(board):
@@ -121,15 +134,10 @@ def isBoardFull(board):
             return False   #returns False if any space is blank
     return True   #returns True if no spaces are blank
 
-#sets a space to a mark    
+#sets a board space to a player's mark    
 def updateBoard(board, space, player):
     board[space] = player
     
-def checkDraw():
-    for key in board.keys():
-        if board[key] == ' ':
-            return False
-
 #returns a list of all available moves
 def availableMoves(board):
     moves = []
@@ -138,5 +146,4 @@ def availableMoves(board):
             moves.append(x)
     return moves
         
-if __name__ == '__main__':
-    main()
+main()
